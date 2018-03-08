@@ -2,17 +2,20 @@ package cn.nicemorning.sockword.activity;
 
 import android.app.KeyguardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.assetsbasedata.AssetsDatabaseManager;
 import com.iflytek.cloud.speech.SpeechConstant;
@@ -143,6 +146,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         timeText.setText(mHours + ":" + mMinute);
         dateText.setText(mMonth + "月" + mDay + "日   " + "星期" + mWay);
+        getDBData();
+    }
+
+    private void saveWrongData() {
+        String word = datas.get(k).getWord();
+        String english = datas.get(k).getEnglish();
+        String china = datas.get(k).getChina();
+        String sign = datas.get(k).getSign();
+        CET4Entity data = new CET4Entity(Long.valueOf(dbDao.count()), word, english, china, sign);
+        dbDao.insertOrReplace(data);
+    }
+
+    private void btnGetText(String msg, RadioButton button) {
+        if (msg.equals(datas.get(k).getChina())) {
+            wordText.setTextColor(Color.GREEN);
+            englishText.setTextColor(Color.GREEN);
+            button.setTextColor(Color.GREEN);
+        } else {
+            wordText.setTextColor(Color.RED);
+            englishText.setTextColor(Color.RED);
+            button.setTextColor(Color.RED);
+            saveWrongData();
+            int wrong = sharedPreferences.getInt("wrong", 0);
+            editor.putInt("wrong", wrong + 1);
+            editor.putString("wrongId", "," + datas.get(j).getId());
+            editor.commit();
+        }
     }
 
     /**
@@ -169,7 +199,113 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
+        radioGroup.setClickable(false);
+        String msg;
+        switch (checkedId) {
+            case R.id.choose_btn_one:
+                msg = radioOne.getText().toString().substring(3);
+                btnGetText(msg, radioOne);
+                break;
+            case R.id.choose_btn_two:
+                msg = radioOne.getText().toString().substring(3);
+                btnGetText(msg, radioTwo);
+                break;
+            case R.id.choose_btn_three:
+                msg = radioOne.getText().toString().substring(3);
+                btnGetText(msg, radioThree);
+                break;
+        }
+    }
 
+    private void setTextColor() {
+        radioOne.setChecked(false);
+        radioTwo.setChecked(false);
+        radioThree.setChecked(false);
+        radioOne.setTextColor(Color.parseColor("#FFFFFF"));
+        radioTwo.setTextColor(Color.parseColor("#FFFFFF"));
+        radioThree.setTextColor(Color.parseColor("#FFFFFF"));
+        wordText.setTextColor(Color.parseColor("#FFFFFF"));
+        englishText.setTextColor(Color.parseColor("#FFFFFF"));
+    }
+
+    private void unlocked() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(intent);
+        kl.disableKeyguard();
+        finish();
+    }
+
+    private void setChina(List<CET4Entity> datas, int j) {
+        Random r = new Random();
+        List<Integer> listInt = new ArrayList<>();
+        int i;
+        while (listInt.size() < 4) {
+            i = r.nextInt(20);
+            if (!listInt.contains(i)) {
+                listInt.add(i);
+            }
+        }
+        if (listInt.get(0) < 7) {
+            radioOne.setText("A: " + datas.get(k).getChina());
+            if (k - 1 >= 0) {
+                radioTwo.setText("B: " + datas.get(k - 1).getChina());
+            } else {
+                radioTwo.setText("B: " + datas.get(k + 2).getChina());
+            }
+            if (k + 1 < 20) {
+                radioThree.setText("C: " + datas.get(k + 1).getChina());
+            } else {
+                radioThree.setText("C: " + datas.get(k - 1).getChina());
+            }
+        } else if (listInt.get(0) < 14) {
+            radioTwo.setText("B: " + datas.get(k).getChina());
+            if (k - 1 >= 0) {
+                radioOne.setText("A: " + datas.get(k - 1).getChina());
+            } else {
+                radioOne.setText("A: " + datas.get(k + 2).getChina());
+            }
+            if (k + 1 < 20) {
+                radioThree.setText("C: " + datas.get(k + 1).getChina());
+            } else {
+                radioThree.setText("C: " + datas.get(k - 1).getChina());
+            }
+        } else {
+            radioThree.setText("C: " + datas.get(k).getChina());
+            if (k - 1 >= 0) {
+                radioTwo.setText("B: " + datas.get(k - 1).getChina());
+            } else {
+                radioTwo.setText("B: " + datas.get(k + 2).getChina());
+            }
+            if (k + 1 < 20) {
+                radioOne.setText("A: " + datas.get(k + 1).getChina());
+            } else {
+                radioOne.setText("A: " + datas.get(k - 1).getChina());
+            }
+        }
+    }
+
+    private void getDBData() {
+        datas = questionDao.queryBuilder().list();
+        k = list.get(j);
+        wordText.setText(datas.get(k).getWord());
+        englishText.setText(datas.get(k).getEnglish());
+        setChina(datas, k);
+    }
+
+    private void getNextData() {
+        j++;
+        int i = sharedPreferences.getInt("allNum", 2);
+        if (i > j) {
+            getDBData();
+            setTextColor();
+            int num = sharedPreferences.getInt("alreadyStudy", 0) + 1;
+            editor.putInt("alreadyStudy", num);
+            editor.commit();
+        } else {
+            unlocked();
+        }
     }
 
     @Override
@@ -227,4 +363,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         speechSynthesizer.setParameter(SpeechConstant.PITCH, "50");
     }
 
+    /**
+     * Called when a touch screen event was not handled by any of the views
+     * under it.  This is most useful to process touch events that happen
+     * outside of your window bounds, where there is no view to receive it.
+     *
+     * @param event The touch screen event being processed.
+     * @return Return true if you have consumed the event, false if you haven't.
+     * The default implementation always returns false.
+     */
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            x1 = event.getX();
+            y1 = event.getY();
+        }
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            x2 = event.getX();
+            y2 = event.getY();
+            if (y1 - y2 > 200) {
+                int num = sharedPreferences.getInt("alreadyMastered", 0) + 1;
+                editor.putInt("alreadyMastered", num);
+                editor.commit();
+                Toast.makeText(this, "已掌握", Toast.LENGTH_SHORT).show();
+                getNextData();
+            } else if (y2 - y1 > 200) {
+                Toast.makeText(this, "正在开发......", Toast.LENGTH_SHORT).show();
+            } else if (x1 - x2 > 200) {
+                getNextData();
+            } else if (x2 - x1 > 200) {
+                unlocked();
+            }
+        }
+        return super.onTouchEvent(event);
+    }
 }
