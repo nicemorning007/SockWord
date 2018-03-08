@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@mipmap/background"
     android:orientation="vertical"
-    tools:context="cn.nicemorning.sockword.MainActivity">
+    tools:context="cn.nicemorning.sockword.activity.MainActivity">
 
     <!--用于显示时间的文本框控件-->
     <TextView
