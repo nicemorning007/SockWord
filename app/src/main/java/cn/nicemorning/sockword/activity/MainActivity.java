@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         kl = km.newKeyguardLock("unlock");
         AssetsDatabaseManager.initManager(this);
         AssetsDatabaseManager manager = AssetsDatabaseManager.getManager();
-        SQLiteDatabase database = manager.getDatabase("wrod.db");
+        SQLiteDatabase database = manager.getDatabase("word.db");
         mDaoMaster = new DaoMaster(database);
         mDaoSession = mDaoMaster.newSession();
         questionDao = mDaoSession.getCET4EntityDao();
@@ -288,7 +289,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void getDBData() {
         datas = questionDao.queryBuilder().list();
-        k = list.get(j);
+//        k = list.get(j);
+        k = new Random().nextInt(20);
         wordText.setText(datas.get(k).getWord());
         englishText.setText(datas.get(k).getEnglish());
         setChina(datas, k);
