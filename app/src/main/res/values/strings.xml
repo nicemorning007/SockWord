@@ -4,4 +4,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="quotes">名人名句</string>
+    <string name="wrong_string">错词本</string>
+    <string name="review_string">复习</string>
+    <string name="setting_string">设置</string>
 </resources>

@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
+import cn.nicemorning.BaseApplication;
 import cn.nicemorning.greendao.entity.greendao.CET4Entity;
 import cn.nicemorning.greendao.entity.greendao.CET4EntityDao;
 import cn.nicemorning.greendao.entity.greendao.DaoMaster;
@@ -148,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         timeText.setText(mHours + ":" + mMinute);
         dateText.setText(mMonth + "月" + mDay + "日   " + "星期" + mWay);
         getDBData();
+        BaseApplication.addDestoryActivity(this, "mainActivity");
     }
 
     private void saveWrongData() {
